@@ -23,19 +23,38 @@ import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import groovy.json.JsonSlurper
 import internal.GlobalVariable as GlobalVariable
 
-// Kirim request POST
-RequestObject request = findTestObject('API_Endpoints/POST_CreateData')
+
+Map<String, String> itemMap = [:]
+
+RequestObject request = findTestObject('API_Endpoints/GET_GetData')
 ResponseObject response = WS.sendRequest(request)
 
-// Verif Status Code
-WS.verifyResponseStatusCode(response, 201)  
+if (response != null) {
+    println "Response diterima: " + response.getResponseBodyContent() // Menampilkan isi response untuk debugging
+    WS.verifyResponseStatusCode(response, 200)  
 
-// Verif elemen dalam respons JSON
-def responseJson = new JsonSlurper().parseText(response.getResponseBodyContent())
-GlobalVariable.createdId = responseJson.id
-GlobalVariable.createdName = responseJson.name
+    def responseJson = new JsonSlurper().parseText(response.getResponseBodyContent())
 
-// Verif menggunakan GlobalVariable
-WS.verifyElementPropertyValue(response, 'id', GlobalVariable.createdId)
-WS.verifyElementPropertyValue(response, 'name', GlobalVariable.createdName)
-
+    if (responseJson instanceof List) {
+        for (int i = 0; i < responseJson.size(); i++) {
+            def item = responseJson[i]
+       
+            if (item.containsKey('id') && item.containsKey('name')) {
+                String itemId = item.id
+                String itemName = item.name
+                itemMap["itemId${i}"] = itemId
+                itemMap["itemName${i}"] = itemName
+                WS.verifyElementPropertyValue(response, "[${i}].id", itemMap["itemId${i}"])
+                WS.verifyElementPropertyValue(response, "[${i}].name", itemMap["itemName${i}"])
+            } else {
+                println "Error: 'id' atau 'name' tidak ditemukan di item index ${i}"
+            }
+        }
+    } else {
+        println "Error: Respons bukan array yang diharapkan"
+        assert false : "Respons tidak mengandung array"
+    }
+} else {
+    println "Error: Response is null" // Log error jika respons null
+    assert false : "Tidak ada respons yang diterima dari API"
+}

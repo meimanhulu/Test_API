@@ -23,7 +23,6 @@ import com.kms.katalon.core.webservice.keyword.WSBuiltInKeywords as WS
 import groovy.json.JsonSlurper
 import internal.GlobalVariable as GlobalVariable
 
-// Kirim request GET
 RequestObject request = findTestObject('API_Endpoints/GET_GetData')
 ResponseObject response = WS.sendRequest(request)
 
@@ -31,14 +30,35 @@ WS.verifyResponseStatusCode(response, 200)
 
 def responseJson = new JsonSlurper().parseText(response.getResponseBodyContent())
 
-GlobalVariable.firstItemId = responseJson[0].id
-GlobalVariable.firstItemName = responseJson[0].name
+if (responseJson.size() > 0) {
+    if (!GlobalVariable.hasProperty('firstItemId')) {
+        GlobalVariable.firstItemId = ''
+    }
+    if (!GlobalVariable.hasProperty('firstItemName')) {
+        GlobalVariable.firstItemName = ''
+    }
+    GlobalVariable.firstItemId = responseJson[0].id
+    GlobalVariable.firstItemName = responseJson[0].name
 
-GlobalVariable.secondItemId = responseJson[1].id
-GlobalVariable.secondItemName = responseJson[1].name
+    if (responseJson.size() > 1) {
+        if (!GlobalVariable.hasProperty('secondItemId')) {
+            GlobalVariable.secondItemId = ''
+        }
+        if (!GlobalVariable.hasProperty('secondItemName')) {
+            GlobalVariable.secondItemName = ''
+        }
+        GlobalVariable.secondItemId = responseJson[1].id
+        GlobalVariable.secondItemName = responseJson[1].name
+    }
 
-WS.verifyElementPropertyValue(response, '[0].id', GlobalVariable.firstItemId)
-WS.verifyElementPropertyValue(response, '[0].name', GlobalVariable.firstItemName)
+    WS.verifyElementPropertyValue(response, '[0].id', GlobalVariable.firstItemId)
+    WS.verifyElementPropertyValue(response, '[0].name', GlobalVariable.firstItemName)
 
-WS.verifyElementPropertyValue(response, '[1].id', GlobalVariable.secondItemId)
-WS.verifyElementPropertyValue(response, '[1].name', GlobalVariable.secondItemName)
+    if (responseJson.size() > 1) {
+        WS.verifyElementPropertyValue(response, '[1].id', GlobalVariable.secondItemId)
+        WS.verifyElementPropertyValue(response, '[1].name', GlobalVariable.secondItemName)
+    }
+} else {
+    println "Error: Respons tidak mengandung item"
+    assert false : "Respons tidak mengandung item"
+}

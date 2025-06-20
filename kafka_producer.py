@@ -1,19 +1,19 @@
 from kafka import KafkaProducer
-import json
+import time
 
-# Membuat Kafka Producer
-producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',  # Kafka broker di localhost
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')  # Mengonversi data ke JSON dan encoding UTF-8
-)
+# Inisialisasi Kafka producer
+producer = KafkaProducer(bootstrap_servers='localhost:9092')
 
-# Data untuk dikirim ke Kafka
-message = {
-    'id': 'c413',
-    'name': 'newItem'
-}
+# Fungsi untuk mengirim pesan ke Kafka topic
+def send_messages():
+    for i in range(10):
+        message = f"Message {i}"
+        producer.send('inventory-topic', value=message.encode('utf-8'))
+        print(f"Sent: {message}")
+        time.sleep(1)  # Delay 1 detik antara pengiriman pesan
 
-# Mengirim pesan ke Kafka topic "inventory-topic"
-producer.send('inventory-topic', message)
-producer.flush()  # Menyelesaikan pengiriman pesan
-print("Pesan terkirim ke Kafka.")
+# Kirim pesan
+send_messages()
+
+# Tutup producer
+producer.close()

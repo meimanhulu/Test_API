@@ -16,4 +16,10 @@ import com.kms.katalon.core.webui.keyword.WebUiBuiltInKeywords as WebUI
 import com.kms.katalon.core.windows.keyword.WindowsBuiltinKeywords as Windows
 import internal.GlobalVariable as GlobalVariable
 import org.openqa.selenium.Keys as Keys
+import pages.KafkaConsumerKeyword
 
+KafkaConsumerKeyword kafkaConsumer = new KafkaConsumerKeyword()
+
+kafkaConsumer.consumeMessages()
+println("First item ID: " + GlobalVariable.firstItemId)
+println("First item Name: " + GlobalVariable.firstItemName)
